@@ -2,39 +2,83 @@
 
 import React, { Component } from 'react'
 import * as Api from '../middleware/api'
-import DatePicker from 'react-datepicker'
-import moment from 'moment'
-require('react-datepicker/dist/react-datepicker.css');
+import RruleEditor from './RruleEditor' 
 
 export default class ReminderAdd extends Component {
 
+  constructor(props, context) {
+    super(props, context)
+    this.state = {
+      reminderFuzz: 0,
+      isRecurring: this.props.isRecurring || false
+    }
+  }
+
   render() {
     return (
-      <div className="col">
-      <div className="form-group">
-        <input className="form-control" ref="title" name="title" placeholder="Remind me to"/>
-      </div>
-      <div className="form-group">
-        <input className="form-control" ref="rrule" name="rrule" placeholder="How often?"/>
-      </div>
-      <div className="form-group">
-        <DatePicker
-          selected={moment()}
-          onChange={(event) => this.handleStartDateClick(this, event)}
-        />
-      </div>
-      <div className="form-group">
-        <DatePicker
-          selected={moment()}
-          onChange={(event) => this.handleEndDateClick(this, event)}
-        />
-      </div>
-      <div className="form-group">
-        <button 
-          onClick={(event) => this.handleClick(event)}
-          className="btn btn-primary" 
-        >Add Reminder</button>
-      </div>
+      <div className="col-sm-8">
+
+        <form>
+        <div className="form-group row">
+          <label htmlFor="reminder-title">Remind me to:</label>
+          <input
+            className="form-control"
+            id="reminder-title"
+            ref="title"
+            name="title"
+            required="required"
+          />
+        </div>
+
+        <div className="form-group row">
+          <label htmlFor="reminder-title">on:</label>
+          <input
+            type="date"
+            className="form-control"
+            ref="dueDate"
+            name="dueDate" 
+            required="required"
+          />
+        </div>
+
+        <div className="form-group row">
+          <label htmlFor="reminder-fuzz">Fuzziness:</label>
+          <input
+            type="range"
+            name="reminderFuzz"
+            ref="reminderFuzz"
+            value={this.state.reminderFuzz || 0}
+            onChange={event => this.updateReminderFuzz(event)}
+            min="0"            
+            max="5"
+            className="form-control"
+          />
+          <span>{this.state.reminderFuzz}</span>
+        </div>
+      
+        <div className="form-group row">
+          <label>
+            <input
+              type="checkbox"
+              value="1"
+              onChange={() => this.setState({ isRecurring: !this.state.isRecurring })}
+            />
+            Repeat...
+          </label>
+        </div>
+
+       {this.state.isRecurring && 
+        <RruleEditor />
+       }
+
+        <div className="form-group row">
+          <button 
+            onClick={(event) => this.handleClick(event)}
+            className="btn btn-primary" 
+          >Add Reminder</button>
+        </div>
+        </form>
+
       </div>
     )
   }
@@ -46,13 +90,9 @@ export default class ReminderAdd extends Component {
     Api.addReminder({title: title.value.trim(), rrule: rrule.value.trim()})
   }
 
-  handleStartDateClick(element, event) {
-    console.dir(event) 
-    console.dir(element)
-    element.setState({startDate: event._d})
-  }
-
-  handleEndDateClick() {
-
+  updateReminderFuzz(event) {
+     this.setState({
+        reminderFuzz: event.target.value
+     })
   }
 }

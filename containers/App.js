@@ -15,11 +15,12 @@ class App extends React.Component {
   render() {
     const { isAuthenticated, children} = this.props
     return (
-      <div key="rootAppThing">
-        <h1>Armaru 4U</h1>
+      <div key="root">
         <Navbar isAuthenticated={ isAuthenticated } />
         <NotificationBar />
-        { children }
+        <div className="col-sm-12">
+          { children }
+        </div>
       </div>
     )
   }

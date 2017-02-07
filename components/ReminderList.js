@@ -24,7 +24,7 @@ class ReminderList extends Component {
                   {reminder.title}
                   | Rrule: {reminder.rrule} 
                   | <Link to={`/reminder/edit/${reminder.id}`} >(edit)</Link>
-                  | <Link onClick={event => this.handleDeleteClick(reminder.id)}>(delete)</Link>  
+                  | <Link style={{cursor:'pointer'}} onClick={event => this.handleDeleteClick(reminder.id)}>(delete)</Link>  
                 </div> 
               )} 
           </div>
@@ -38,7 +38,6 @@ class ReminderList extends Component {
   }
 
   handleDeleteClick(reminderId) {
-    //console.log('got delete event' + reminderId) 
     Api.deleteReminder(reminderId)
   }
 }

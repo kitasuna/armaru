@@ -39,6 +39,8 @@ app.use(function(err, req, res, next) {
   res.sendStatus(err.status || 500);
 });
 
+app.use('/static', express.static('./static'))
+
 /**
  * Start Server
  */

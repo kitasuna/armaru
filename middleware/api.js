@@ -10,6 +10,7 @@ import {
   getSingleReminderSuccess, getSingleReminderFailure,
   putSingleReminderSuccess,
   addReminderSuccess, addReminderFailure,
+  deleteSingleReminderSuccess,
   tokenFailure,
   hideNotification
 } from '../actions'
@@ -137,6 +138,7 @@ export function deleteReminder(reminderId) {
   })
   .then(res => {
     res.json().then(response => {
+      console.log(response.id)
       store.dispatch(deleteSingleReminderSuccess(response))
     })
   })

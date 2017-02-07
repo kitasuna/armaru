@@ -95,7 +95,8 @@ export const DELETE_REMINDER_SINGLE_FAILURE = 'DELETE_REMINDER_SINGLE_FAILURE'
 
 export function deleteSingleReminderSuccess(response) {
   return {
-    type: DELETE_REMINDER_SINGLE_SUCCESS
+    type: DELETE_REMINDER_SINGLE_SUCCESS,
+    id: response.id
   }
 }
 
@@ -142,7 +143,6 @@ export const REMINDER_ADD_FAILURE = 'REMINDER_ADD_FAILURE'
 
 export function addReminderSuccess(reminder) {
   console.log('in action addReminderSuccess')
-  console.dir(reminder)
   return {
     type: REMINDER_ADD_SUCCESS,
     reminder: reminder

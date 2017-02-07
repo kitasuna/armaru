@@ -10,8 +10,8 @@ export default class Navbar extends Component {
     const { isAuthenticated } = this.props
 
     return (
-        <div className="container-fluid">
-          <nav className='navbar navbar-default'>
+        <div className="container-fluid" style={{marginTop: '2%' }}>
+          <nav className="navbar navbar-default" role="navigation">
             
             <div className="navbar-header">
               <button type="button" className="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
@@ -20,7 +20,7 @@ export default class Navbar extends Component {
                 <span className="icon-bar"></span>
                 <span className="icon-bar"></span>
               </button>
-              <Link to="/" className="navbar-brand">&reg;</Link>
+              <Link to="/" className="navbar-brand">Armaru</Link>
             </div>
             
             <div className="collapse navbar-collapse">
@@ -39,10 +39,12 @@ export default class Navbar extends Component {
 
               
 
-            </ul>
                 {isAuthenticated &&
-                  <Logout />
+                  <li>
+                    <Logout />
+                  </li>
                 }
+            </ul>
 
             </div>
           </nav>

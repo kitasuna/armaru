@@ -193,12 +193,10 @@ function reminders(state={
       })
 
     case REMINDER_ADD_SUCCESS:
-      console.dir(state.reminders)
-      console.dir(action.reminder)
       const reminders = [].concat(state.reminders, action.reminder)
       return Object.assign({}, state, {
         isFetching: false,
-        reminders: reminders
+        reminders: [].concat(state.reminders, action.reminder)
       })
 
     case PUT_REMINDER_SINGLE_SUCCESS:
@@ -209,6 +207,9 @@ function reminders(state={
 
     case DELETE_REMINDER_SINGLE_SUCCESS:
       return Object.assign({}, state, {
+        reminders: state.reminders.filter(function(reminder) {
+          return reminder.id != action.id
+        }),
         isFetching: false
       })
 

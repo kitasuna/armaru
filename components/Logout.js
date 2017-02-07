@@ -9,14 +9,14 @@ export default class Logout extends Component {
     const { onLogoutClick } = this.props
 
     return (
-      <button onClick={(event) => this.handleClick()} className="btn btn-primary">
+      <a onClick={(event) => this.handleClick(event)} style={{cursor:'pointer'}} >
         Logout
-      </button>
+      </a>
     )
   }
 
   handleClick(event) {
-
+    event.preventDefault()
     Api.logoutUser()
 
   }
