@@ -14,12 +14,20 @@ export default class RruleEditor extends Component {
       recurLabel: 'days',
       rrule: this.props.rrule ? this.props.rrule : 'RRULE:FREQ=DAILY;INTERVAL=1;',
     }
+
+    this.recurTypeLabels = {
+        DAILY: 'days',
+        WEEKLY: 'weeks',
+        MONTHLY: 'months',
+        YEARLY: 'years'
+    }
+
   }
 
   render() {
     return (
-      <div>
-        <div className="form-group row">
+      <div style={{backgroundColor: '#FFAAAA', padding: '5px', marginBottom: '20px'}}>
+        <div className="form-group">
           <label htmlFor="recurType">Repeats:</label>
           <select
             className="form-control"
@@ -35,7 +43,7 @@ export default class RruleEditor extends Component {
           </select>
         </div>
 
-        <div className="form-group row">
+        <div className="form-group">
             <label htmlFor="recurInterval">Repeats every:</label>
             <select
               className="form-control"
@@ -44,15 +52,15 @@ export default class RruleEditor extends Component {
               ref="recurInterval"
               onChange={ event => this.updateRecurInterval(event) }
             >
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-              <option>4</option>
-              <option>5</option>
-            </select> <span> {this.state.recurLabel}</span>
+              <option>1 {this.recurTypeLabels[this.state.recurType]}</option>
+              <option>2 {this.recurTypeLabels[this.state.recurType]}</option>
+              <option>3 {this.recurTypeLabels[this.state.recurType]}</option>
+              <option>4 {this.recurTypeLabels[this.state.recurType]}</option>
+              <option>5 {this.recurTypeLabels[this.state.recurType]}</option>
+            </select> 
         </div>
 
-        <div className="form-group row">
+        <div className="form-group">
           <label htmlFor="endType">Ends:</label>
           <div className="radio">
             <label className="radio control-label">

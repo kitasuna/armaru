@@ -9,15 +9,17 @@ export default class Login extends Component {
 
     return (
       <div className="col-xs-3">
+        <form>
         <div className="form-group">
           <input type='text' ref='username' className="form-control" placeholder='Username' />
         </div>
         <div className="form-group">
           <input type='password' ref='password' className="form-control" placeholder='Password' />
         </div>
-        <button onClick={(event) => this.handleClick(event)} className="btn btn-primary">
+        <button type="submit" onClick={(event) => this.handleClick(event)} className="btn btn-primary">
           Login
         </button>
+        </form>
       </div>
     )
   }
