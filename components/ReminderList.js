@@ -18,7 +18,7 @@ class ReminderList extends Component {
       <div>
         <div className="row">
           <div className="col-sm-7">
-            <h2>My stuff</h2>
+            <h2>All reminders</h2>
               {reminders.map( (reminder, index) => 
                 <div key={index}>
                   {reminder.title}
