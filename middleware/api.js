@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8080/api'
+const BASE_URL = 'http://localhost:3500/api'
 import store from '../store'
 import { browserHistory } from 'react-router'
 
@@ -48,7 +48,7 @@ export function addReminder(reminder) {
     headers: {
       "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
     },
-    body: 'title=' + reminder.title + '&rrule=' + reminder.rrule
+    body: 'title=' + reminder.title + '&rrule=' + reminder.rrule + '&schedule=' + reminder.schedule
   })
   .then(res => {
     if(!res.ok) {
