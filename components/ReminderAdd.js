@@ -11,15 +11,15 @@ export default class ReminderAdd extends Component {
     this.state = {
       reminderWeight: 0,
       title: this.props.title || '',
-      scheduleType: this.props.scheduleType || 'none',
-      onceDueDate: null,
+      schedule: this.props.schedule || 'none',
+      onceDueDate: this.props.onceDueDate ? this.props.onceDueDate : '2017-06-01',
       onceFuzz: 0,
-      recurringDueDate: null,
+      recurringDueDate: this.props.recurringDueDate ? this.props.recurringDueDate : '2017-07-01',
       recurringFuzz: 0,
       recurType: 'DAILY',
       recurEndType: 'NEVER',
-      recurEndDate: this.props.recurEndDate ? this.props.recurEndDate : '',
-      recurEndCount: this.props.recurEndCount ? this.props.recurEndCount : '',
+      recurEndDate: this.props.recurEndDate ? this.props.recurEndDate : '2017-05-01',
+      recurEndCount: this.props.recurEndCount ? this.props.recurEndCount : '0',
       recurInterval: 1,
       recurLabel: 'days',
       rrule: this.props.rrule ? this.props.rrule : 'RRULE:FREQ=DAILY;INTERVAL=1;',
@@ -48,20 +48,55 @@ export default class ReminderAdd extends Component {
         MONTHLY: 'months',
         YEARLY: 'years'
     }
+
+    this.handleInputChange = this.handleInputChange.bind(this)
   }
 
+  handleInputChange(event) {
+    const target = event.target
+    const value = target.type == 'checkbox' ? target.checked : target.value
+    const name = target.name
+
+
+    this.setState({
+      [name]: value
+    }, this.updateRrule)
+    
+  }
+
+  updateRrule() {
+     let recurEndType = this.state.recurEndType
+     let recurEndTypeString = ''
+     if(recurEndType === 'UNTIL' && this.state.recurEndDate) {
+       let endDate = new Date(this.state.recurEndDate)
+       console.log(endDate)
+       console.log(endDate.getMonth())
+       endDate.setDate(endDate.getDate() + 1)
+       recurEndTypeString = 'UNTIL=' + endDate.getFullYear() + ('0' + (endDate.getMonth()+1)).slice(-2) + ('0' + (endDate.getDate()-1)).slice(-2)
+     } else if(recurEndType == 'COUNT' && this.state.recurEndCount) {
+       recurEndTypeString = 'COUNT=' + this.state.recurEndCount
+     } 
+
+     this.setState({
+       rrule: 
+        'RRULE:FREQ=' + this.state.recurType + ';'
+        + 'INTERVAL=' + this.state.recurInterval + ';'
+        + recurEndTypeString
+     })
+  }
   render() {
     return (
       <div>
         <form>
         <div className="form-group">
-          <label htmlFor="reminder-title">Remind me to:</label>
+          <label htmlFor="title">Remind me to:</label>
           <input
             className="form-control"
-            id="reminder-title"
-            ref="title"
+            id="title"
             name="title"
             required="required"
+            value={this.state.title}
+            onChange={this.handleInputChange}
           />
         </div>
 
@@ -70,9 +105,8 @@ export default class ReminderAdd extends Component {
           <input
             type="range"
             name="reminderWeight"
-            ref="reminderWeight"
             value={this.state.reminderWeight || 0}
-            onChange={event => this.updateReminderWeight(event)}
+            onChange={this.handleInputChange}
             min="0"            
             max="4"
             className="form-control"
@@ -85,7 +119,7 @@ export default class ReminderAdd extends Component {
         <div className="">
           <ul className="nav nav-pills">
             <li
-              className={(this.state.scheduleType == 'none' ? 'active' : '')}
+              className={(this.state.schedule == 'none' ? 'active' : '')}
             >
               <a
                 href="#"
@@ -95,7 +129,7 @@ export default class ReminderAdd extends Component {
               </a>
             </li>
             <li
-              className={(this.state.scheduleType == 'once' ? 'active' : '')}
+              className={(this.state.schedule == 'once' ? 'active' : '')}
             >
               <a
                 href="#"
@@ -105,7 +139,7 @@ export default class ReminderAdd extends Component {
               </a>
             </li>
             <li
-              className={(this.state.scheduleType == 'recurring' ? 'active' : '')}
+              className={(this.state.schedule == 'recurring' ? 'active' : '')}
             >
               <a
                 href="#"
@@ -119,7 +153,7 @@ export default class ReminderAdd extends Component {
             className={"tab-content"}
           >
             <div
-              className={"tab-pane " + (this.state.scheduleType == 'none' ? 'active' : '')}
+              className={"tab-pane " + (this.state.schedule == 'none' ? 'active' : '')}
               id="event-unscheduled"
               style={{backgroundColor: '#AAAAFF', padding: '5px', marginBottom: '20px'}}
             >
@@ -128,7 +162,7 @@ export default class ReminderAdd extends Component {
             </div>
           
             <div
-              className={"tab-pane " + (this.state.scheduleType == 'once' ? 'active' : '')}
+              className={"tab-pane " + (this.state.schedule == 'once' ? 'active' : '')}
               id="event-scheduled"
               style={{backgroundColor: '#AAFFAA', padding: '5px', marginBottom: '20px'}}
             >
@@ -142,10 +176,11 @@ export default class ReminderAdd extends Component {
                 <input
                   type="date"
                   className="form-control"
-                  ref="onceDueDate"
                   id="onceDueDate"
                   name="onceDueDate" 
                   required="required"
+                  onChange={this.handleInputChange}
+                  value={this.state.onceDueDate}
                 />
               </div>
 
@@ -155,9 +190,8 @@ export default class ReminderAdd extends Component {
                   type="range"
                   name="onceFuzz"
                   id="onceFuzz"
-                  ref="onceFuzz"
                   value={this.state.onceFuzz || 0}
-                  onChange={event => this.updateOnceFuzz(event)}
+                  onChange={this.handleInputChange}
                   min="0"            
                   max="3"
                   className="form-control"
@@ -167,7 +201,7 @@ export default class ReminderAdd extends Component {
             </div>
         
             <div
-              className={"tab-pane " + (this.state.scheduleType == 'recurring' ? 'active' : '')}
+              className={"tab-pane " + (this.state.schedule == 'recurring' ? 'active' : '')}
               id="event-recurring"
               style={{backgroundColor: '#FFAAAA', padding: '5px', marginBottom: '20px'}}
             >
@@ -182,9 +216,10 @@ export default class ReminderAdd extends Component {
             <input
               type="date"
               className="form-control"
-              ref="recurringDueDate"
               id="recurringDueDate"
               name="recurringDueDate" 
+              value={this.state.recurringDueDate}
+              onChange={this.handleInputChange}
               required="required"
             />
           </div>
@@ -195,9 +230,8 @@ export default class ReminderAdd extends Component {
               type="range"
               name="recurringFuzz"
               id="recurringFuzz"
-              ref="recurringFuzz"
               value={this.state.recurringFuzz || 0}
-              onChange={event => this.updateRecurringFuzz(event)}
+              onChange={this.handleInputChange}
               min="0"            
               max="3"
               className="form-control"
@@ -210,8 +244,8 @@ export default class ReminderAdd extends Component {
               className="form-control"
               id="recurType"
               name="recurType"
-              ref="recurType"
-              onChange={ event => this.updateRecurType(event) }
+              value={this.state.recurType}
+              onChange={this.handleInputChange}
             >
               <option value="DAILY">Daily</option>
               <option value="WEEKLY">Weekly</option>
@@ -226,8 +260,8 @@ export default class ReminderAdd extends Component {
                 className="form-control"
                 id="recurInterval"
                 name="recurInterval"
-                ref="recurInterval"
-                onChange={ event => this.updateRecurInterval(event) }
+                value={this.state.recurInterval}
+                onChange={this.handleInputChange}
               >
                 <option>1 {this.recurTypeLabels[this.state.recurType]}</option>
                 <option>2 {this.recurTypeLabels[this.state.recurType]}</option>
@@ -243,15 +277,15 @@ export default class ReminderAdd extends Component {
           </div>
 
           <div className="form-group">
-            <label htmlFor="endType">Ends:</label>
+            <label htmlFor="recurEndType">Ends:</label>
             <div className="radio">
               <label className="radio control-label">
                 <input
                   type="radio"
-                  name="endType"
+                  name="recurEndType"
                   value="NEVER"
                   checked={this.state.recurEndType === 'NEVER'}
-                  onChange={event => this.updateRecurEndType(event)}
+                  onChange={this.handleInputChange}
                 />
                 Never
               </label>
@@ -260,19 +294,19 @@ export default class ReminderAdd extends Component {
               <label className="radio control-label inline">
                 <input
                   type="radio"
-                  name="endType"
+                  name="recurEndType"
                   value="COUNT"
                   checked={this.state.recurEndType === 'COUNT'}
-                  onChange={event => this.updateRecurEndType(event)}
+                  onChange={this.handleInputChange}
                 />
                 After&nbsp;
                 <input
                   className="form-control"
                   style={{minWidth:0,width:'45px',display:'inline'}}
                   type="text"
-                  name="recurCount"
+                  name="recurEndCount"
                   value={this.state.recurEndCount} 
-                  onChange={event => this.updateRecurEndCount(event)}
+                  onChange={this.handleInputChange}
                   /> times
               </label>
             </div>
@@ -280,10 +314,10 @@ export default class ReminderAdd extends Component {
               <label>
                 <input
                   type="radio"
-                  name="endType"
+                  name="recurEndType"
                   value="UNTIL"
-                  onChange={event => this.updateRecurEndType(event)}
                   checked={this.state.recurEndType === 'UNTIL'}
+                  onChange={this.handleInputChange}
                 />
                 On&nbsp;
                 <input
@@ -291,8 +325,7 @@ export default class ReminderAdd extends Component {
                   type="date"
                   name="recurEndDate"
                   id="recurEndDate"
-                  ref="recurEndDate"
-                  onChange={event => this.updateRecurEndDate(event)}
+                  onChange={this.handleInputChange}
                 />
               </label>
             </div>
@@ -316,40 +349,22 @@ export default class ReminderAdd extends Component {
 
   handleClick() {
     let reminder = {
-      title: this.refs.title,
+      title: this.state.title,
       rrule: this.state.rrule,
       weight: this.state.reminderWeight,
-      scheduleType: this.state.scheduleType,
+      schedule: this.state.schedule,
     }
 
-    if(reminder.scheduleType == 'once') {
-      reminder.dueDate = this.refs.onceDueDate
-      reminder.fuzz = this.refs.onceFuzz
-    } else if(reminder.scheduleType == 'recurring') {
-      reminder.dueDate = this.refs.recurringDueDate
-      reminder.fuzz = this.refs.recurringFuzz
+    if(reminder.schedule == 'once') {
+      reminder.dueDate = this.state.onceDueDate
+      reminder.fuzz = this.state.onceFuzz
+    } else if(reminder.schedule == 'recurring') {
+      reminder.dueDate = this.state.recurringDueDate
+      reminder.fuzz = this.state.recurringFuzz
       reminder.rrule = this.state.rrule
     }
 
     Api.addReminder(reminder)
-  }
-
-  updateRecurringFuzz(event) {
-    this.setState({
-      recurringFuzz: event.target.value
-    })
-  }
-
-  updateOnceFuzz(event) {
-    this.setState({
-      onceFuzz: event.target.value
-    })
-  }
-
-  updateReminderWeight(event) {
-    this.setState({
-      reminderWeight: event.target.value
-    })
   }
 
   switchTabs(event, tabId) {
@@ -357,37 +372,19 @@ export default class ReminderAdd extends Component {
 
     if(tabId === 'event-unscheduled') {
       this.setState({
-        scheduleType: 'none'
+        schedule: 'none'
       })
     } else if(tabId === 'event-scheduled') {
       this.setState({
-        scheduleType: 'once'
+        schedule: 'once'
       })
     } else if(tabId === 'event-recurring') {
       this.setState({
-        scheduleType: 'recurring'
+        schedule: 'recurring'
       })
     }
   }
 
-  updateRrule() {
-     let recurEndType = this.state.recurEndType
-     let recurEndTypeString = ''
-     if(recurEndType === 'UNTIL' && this.state.recurEndDate) {
-       let endDate = new Date(this.state.recurEndDate)
-       endDate.setDate(endDate.getDate() + 1)
-       recurEndTypeString = 'UNTIL=' + endDate.getFullYear() + ('0' + endDate.getMonth()).slice(-2) + ('0' + endDate.getDate()).slice(-2)
-     } else if(recurEndType == 'COUNT' && this.state.recurEndCount) {
-       recurEndTypeString = 'COUNT=' + this.state.recurEndCount
-     } 
-
-     this.setState({
-       rrule: 
-        'RRULE:FREQ=' + this.state.recurType + ';'
-        + 'INTERVAL=' + this.state.recurInterval + ';'
-        + recurEndTypeString
-     })
-  }
 
   updateRecurType(event) {
     const recurLabels = {
@@ -402,35 +399,5 @@ export default class ReminderAdd extends Component {
          recurType: selectedOption.value,
          recurLabel: recurLabels[selectedOption.text]
       }, this.updateRrule)
-  }
-
-  updateRecurEndType(event) {
-    this.setState({
-      recurEndType: event.target.value
-    }, this.updateRrule)
-  }
-
-  updateRecurEndCount(event) {
-    const val = event.target.value
-    if(val) {
-      this.setState({
-        recurEndCount: val
-      }, this.updateRrule)
-    }
-  }
-
-  updateRecurEndDate(event) {
-    const val = event.target.value
-    console.log(val)
-    if(val) {
-      this.setState({
-        recurEndDate: val
-      }, this.updateRrule)
-    }
-  }
-
-  updateRecurInterval(event) {
-    const selectedOption = event.target.options[event.target.selectedIndex]
-    this.setState({recurInterval: selectedOption.value}, this.updateRrule)
   }
 }
