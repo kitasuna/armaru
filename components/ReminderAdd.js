@@ -1,13 +1,24 @@
 'use strict'
 
 import React, { Component } from 'react'
+//import { connect } from 'react-redux'
 import * as Api from '../middleware/api'
 import RruleEditor from './RruleEditor' 
+import WeightSlider from './WeightSlider'
+import update from 'immutability-helper'
+import momment from 'moment'
 
 export default class ReminderAdd extends Component {
 
   constructor(props, context) {
     super(props, context)
+
+    this.state = {
+      formMode: 'add',
+      reminder: props.reminder,
+    }
+
+    /*
     this.state = {
       reminderWeight: 0,
       title: this.props.title || '',
@@ -23,7 +34,9 @@ export default class ReminderAdd extends Component {
       recurInterval: 1,
       recurLabel: 'days',
       rrule: this.props.rrule ? this.props.rrule : 'RRULE:FREQ=DAILY;INTERVAL=1;',
+      formMode: 'add',
     }
+    */
 
     this.reminderFuzzLabels = {
       0: 'on the date you specify',
@@ -33,14 +46,6 @@ export default class ReminderAdd extends Component {
       4: 'within a month of the date you specify'
     }
 
-    this.reminderWeightLabels = {
-      0: 'between 5-10 minutes',
-      1: 'between 10-30 minutes',
-      2: 'between 30-60 minutes',
-      3: 'between 1-2 hours',
-      4: 'between 3-4 hours',
-      5: 'between 4-6 hours'
-    }
 
     this.recurTypeLabels = {
         DAILY: 'days',
@@ -52,15 +57,33 @@ export default class ReminderAdd extends Component {
     this.handleInputChange = this.handleInputChange.bind(this)
   }
 
+  componentWillReceiveProps(props) {
+    let formMode = 'add'
+
+    if(props.reminder && props.reminder.id) {
+      formMode = 'edit'  
+    }
+
+    this.state = {
+      formMode: formMode,
+      reminder: props.reminder || {},
+    }
+  }
+
   handleInputChange(event) {
     const target = event.target
     const value = target.type == 'checkbox' ? target.checked : target.value
     const name = target.name
 
-
-    this.setState({
-      [name]: value
-    }, this.updateRrule)
+    if(this.state.reminder.hasOwnProperty(name)) {
+      this.setState({
+        reminder: update(this.state.reminder, {[name]: {$set: value}})
+      }, this.updateRrule)
+    } else {
+      this.setState({
+        [name]: value
+      }, this.updateRrule)
+    }
     
   }
 
@@ -69,13 +92,16 @@ export default class ReminderAdd extends Component {
      let recurEndTypeString = ''
      if(recurEndType === 'UNTIL' && this.state.recurEndDate) {
        let endDate = new Date(this.state.recurEndDate)
-       console.log(endDate)
-       console.log(endDate.getMonth())
+       //console.log(endDate)
+       //console.log(endDate.getMonth())
        endDate.setDate(endDate.getDate() + 1)
        recurEndTypeString = 'UNTIL=' + endDate.getFullYear() + ('0' + (endDate.getMonth()+1)).slice(-2) + ('0' + (endDate.getDate()-1)).slice(-2)
      } else if(recurEndType == 'COUNT' && this.state.recurEndCount) {
        recurEndTypeString = 'COUNT=' + this.state.recurEndCount
      } 
+    
+     //
+    //TODO: This needs to be updated... somehow....
 
      this.setState({
        rrule: 
@@ -84,9 +110,14 @@ export default class ReminderAdd extends Component {
         + recurEndTypeString
      })
   }
+
   render() {
+    let reminder  = this.state.reminder
+    console.log('RENDER reminderAdd')
+    //console.log(reminder)
     return (
       <div>
+        <h2>Add a reminder</h2>
         <form>
         <div className="form-group">
           <label htmlFor="title">Remind me to:</label>
@@ -95,55 +126,43 @@ export default class ReminderAdd extends Component {
             id="title"
             name="title"
             required="required"
-            value={this.state.title}
+            value={reminder.title}
             onChange={this.handleInputChange}
           />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="reminderWeight">This task should take me:</label>
-          <input
-            type="range"
-            name="reminderWeight"
-            value={this.state.reminderWeight || 0}
-            onChange={this.handleInputChange}
-            min="0"            
-            max="4"
-            className="form-control"
-          />
-          <span>{this.reminderWeightLabels[this.state.reminderWeight]}</span>
-        </div>
+        <WeightSlider weight={reminder.weight} onChange={this.handleInputChange} />
 
         
         <label>Schedule</label>
         <div className="">
           <ul className="nav nav-pills">
             <li
-              className={(this.state.schedule == 'none' ? 'active' : '')}
+              className={(reminder.schedule == 'none' ? 'active' : '')}
             >
               <a
                 href="#"
-                onClick={event => this.switchTabs(event, "event-unscheduled")}
+                onClick={event => this.switchTabs(event, "none")}
               >
                 None
               </a>
             </li>
             <li
-              className={(this.state.schedule == 'once' ? 'active' : '')}
+              className={(reminder.schedule == 'once' ? 'active' : '')}
             >
               <a
                 href="#"
-                onClick={event => this.switchTabs(event, "event-scheduled")}
+                onClick={event => this.switchTabs(event, "once")}
               >
                 Once
               </a>
             </li>
             <li
-              className={(this.state.schedule == 'recurring' ? 'active' : '')}
+              className={(reminder.schedule == 'recurring' ? 'active' : '')}
             >
               <a
                 href="#"
-                onClick={event => this.switchTabs(event, "event-recurring")}
+                onClick={event => this.switchTabs(event, "recurring")}
               >
                 Repeat
               </a>
@@ -153,8 +172,8 @@ export default class ReminderAdd extends Component {
             className={"tab-content"}
           >
             <div
-              className={"tab-pane " + (this.state.schedule == 'none' ? 'active' : '')}
-              id="event-unscheduled"
+              className={"tab-pane " + (reminder.schedule == 'none' ? 'active' : '')}
+              id="schedule-none"
               style={{backgroundColor: '#AAAAFF', padding: '5px', marginBottom: '20px'}}
             >
               This reminder can show up in your rolls immediately.
@@ -162,8 +181,8 @@ export default class ReminderAdd extends Component {
             </div>
           
             <div
-              className={"tab-pane " + (this.state.schedule == 'once' ? 'active' : '')}
-              id="event-scheduled"
+              className={"tab-pane " + (reminder.schedule == 'once' ? 'active' : '')}
+              id="schedule-once"
               style={{backgroundColor: '#AAFFAA', padding: '5px', marginBottom: '20px'}}
             >
               This reminder will show up around the date you specify.
@@ -177,10 +196,10 @@ export default class ReminderAdd extends Component {
                   type="date"
                   className="form-control"
                   id="onceDueDate"
-                  name="onceDueDate" 
+                  name="dueDate" 
                   required="required"
                   onChange={this.handleInputChange}
-                  value={this.state.onceDueDate}
+                  value={reminder.dueDate}
                 />
               </div>
 
@@ -188,9 +207,9 @@ export default class ReminderAdd extends Component {
                 <label htmlFor="reminderFuzz">Fuzz:</label>
                 <input
                   type="range"
-                  name="onceFuzz"
+                  name="fuzz"
                   id="onceFuzz"
-                  value={this.state.onceFuzz || 0}
+                  value={reminder.fuzz || 0}
                   onChange={this.handleInputChange}
                   min="0"            
                   max="3"
@@ -201,8 +220,8 @@ export default class ReminderAdd extends Component {
             </div>
         
             <div
-              className={"tab-pane " + (this.state.schedule == 'recurring' ? 'active' : '')}
-              id="event-recurring"
+              className={"tab-pane " + (reminder.schedule == 'recurring' ? 'active' : '')}
+              id="schedule-recurring"
               style={{backgroundColor: '#FFAAAA', padding: '5px', marginBottom: '20px'}}
             >
               This reminder will start to show up around the date you specify.
@@ -217,8 +236,8 @@ export default class ReminderAdd extends Component {
               type="date"
               className="form-control"
               id="recurringDueDate"
-              name="recurringDueDate" 
-              value={this.state.recurringDueDate}
+              name="dueDate" 
+              value={reminder.dueDate}
               onChange={this.handleInputChange}
               required="required"
             />
@@ -228,15 +247,15 @@ export default class ReminderAdd extends Component {
             <label htmlFor="reminderFuzz">Fuzz:</label>
             <input
               type="range"
-              name="recurringFuzz"
+              name="fuzz"
               id="recurringFuzz"
-              value={this.state.recurringFuzz || 0}
+              value={reminder.fuzz || 0}
               onChange={this.handleInputChange}
               min="0"            
               max="3"
               className="form-control"
             />
-            <span>your reminder will come {this.reminderFuzzLabels[this.state.recurringFuzz]}</span>
+            <span>your reminder will come {this.reminderFuzzLabels[reminder.fuzz]}</span>
           </div>
           <div className="form-group">
             <label htmlFor="recurType">Repeats:</label>
@@ -244,7 +263,7 @@ export default class ReminderAdd extends Component {
               className="form-control"
               id="recurType"
               name="recurType"
-              value={this.state.recurType}
+              value={reminder.recurType}
               onChange={this.handleInputChange}
             >
               <option value="DAILY">Daily</option>
@@ -260,19 +279,19 @@ export default class ReminderAdd extends Component {
                 className="form-control"
                 id="recurInterval"
                 name="recurInterval"
-                value={this.state.recurInterval}
+                value={reminder.recurInterval}
                 onChange={this.handleInputChange}
               >
-                <option>1 {this.recurTypeLabels[this.state.recurType]}</option>
-                <option>2 {this.recurTypeLabels[this.state.recurType]}</option>
-                <option>3 {this.recurTypeLabels[this.state.recurType]}</option>
-                <option>4 {this.recurTypeLabels[this.state.recurType]}</option>
-                <option>5 {this.recurTypeLabels[this.state.recurType]}</option>
-                <option>6 {this.recurTypeLabels[this.state.recurType]}</option>
-                <option>7 {this.recurTypeLabels[this.state.recurType]}</option>
-                <option>8 {this.recurTypeLabels[this.state.recurType]}</option>
-                <option>9 {this.recurTypeLabels[this.state.recurType]}</option>
-                <option>10 {this.recurTypeLabels[this.state.recurType]}</option>
+                <option>1 {this.recurTypeLabels[reminder.recurType]}</option>
+                <option>2 {this.recurTypeLabels[reminder.recurType]}</option>
+                <option>3 {this.recurTypeLabels[reminder.recurType]}</option>
+                <option>4 {this.recurTypeLabels[reminder.recurType]}</option>
+                <option>5 {this.recurTypeLabels[reminder.recurType]}</option>
+                <option>6 {this.recurTypeLabels[reminder.recurType]}</option>
+                <option>7 {this.recurTypeLabels[reminder.recurType]}</option>
+                <option>8 {this.recurTypeLabels[reminder.recurType]}</option>
+                <option>9 {this.recurTypeLabels[reminder.recurType]}</option>
+                <option>10 {this.recurTypeLabels[reminder.recurType]}</option>
               </select> 
           </div>
 
@@ -284,7 +303,7 @@ export default class ReminderAdd extends Component {
                   type="radio"
                   name="recurEndType"
                   value="NEVER"
-                  checked={this.state.recurEndType === 'NEVER'}
+                  checked={reminder.recurEndType === 'NEVER'}
                   onChange={this.handleInputChange}
                 />
                 Never
@@ -296,7 +315,7 @@ export default class ReminderAdd extends Component {
                   type="radio"
                   name="recurEndType"
                   value="COUNT"
-                  checked={this.state.recurEndType === 'COUNT'}
+                  checked={reminder.recurEndType === 'COUNT'}
                   onChange={this.handleInputChange}
                 />
                 After&nbsp;
@@ -305,7 +324,7 @@ export default class ReminderAdd extends Component {
                   style={{minWidth:0,width:'45px',display:'inline'}}
                   type="text"
                   name="recurEndCount"
-                  value={this.state.recurEndCount} 
+                  defaultValue={reminder.recurEndCount} 
                   onChange={this.handleInputChange}
                   /> times
               </label>
@@ -316,7 +335,7 @@ export default class ReminderAdd extends Component {
                   type="radio"
                   name="recurEndType"
                   value="UNTIL"
-                  checked={this.state.recurEndType === 'UNTIL'}
+                  checked={reminder.recurEndType === 'UNTIL'}
                   onChange={this.handleInputChange}
                 />
                 On&nbsp;
@@ -330,7 +349,7 @@ export default class ReminderAdd extends Component {
               </label>
             </div>
           </div>
-          <div>Current rrule: {this.state.rrule}</div>
+          <div>Current rrule: {reminder.rrule}</div>
             </div>
           </div>
         </div>
@@ -339,7 +358,7 @@ export default class ReminderAdd extends Component {
           <button 
             onClick={(event) => this.handleClick(event)}
             className="btn btn-primary" 
-          >Add Reminder</button>
+          >{this.state.formMode == 'add' ? 'Add Reminder' : 'Update Reminder'}</button>
         </div>
         </form>
 
@@ -347,42 +366,45 @@ export default class ReminderAdd extends Component {
     )
   }
 
-  handleClick() {
-    let reminder = {
-      title: this.state.title,
-      rrule: this.state.rrule,
-      weight: this.state.reminderWeight,
-      schedule: this.state.schedule,
+  handleClick(event) {
+    let reminder = this.state.reminder
+
+    if(reminder.dueDate == null) {
+      reminder.dueDate = moment().format('YYYY-MM-DD')
     }
 
-    if(reminder.schedule == 'once') {
-      reminder.dueDate = this.state.onceDueDate
-      reminder.fuzz = this.state.onceFuzz
-    } else if(reminder.schedule == 'recurring') {
-      reminder.dueDate = this.state.recurringDueDate
-      reminder.fuzz = this.state.recurringFuzz
-      reminder.rrule = this.state.rrule
+    console.log('using ', this.state.formMode)
+    console.dir(reminder)
+    if(this.state.formMode == 'add') {
+      Api.addReminder(reminder)
+    } else {
+      Api.putReminder(reminder)
     }
 
-    Api.addReminder(reminder)
+    event.preventDefault()
   }
 
-  switchTabs(event, tabId) {
+  switchTabs(event, scheduleType) {
     event.preventDefault()
 
-    if(tabId === 'event-unscheduled') {
+    this.setState({
+      reminder: update(this.state.reminder, {schedule: {$set: scheduleType}})
+    }, this.updateRrule)
+    /*
+    if(tabId === 'unscheduled') {
       this.setState({
         schedule: 'none'
       })
-    } else if(tabId === 'event-scheduled') {
+    } else if(tabId === 'scheduled') {
       this.setState({
         schedule: 'once'
       })
-    } else if(tabId === 'event-recurring') {
+    } else if(tabId === 'recurring') {
       this.setState({
         schedule: 'recurring'
       })
     }
+    */
   }
 
 
@@ -400,4 +422,5 @@ export default class ReminderAdd extends Component {
          recurLabel: recurLabels[selectedOption.text]
       }, this.updateRrule)
   }
+
 }

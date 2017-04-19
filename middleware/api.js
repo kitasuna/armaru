@@ -40,7 +40,6 @@ export function createUser(creds) {
 }
 
 export function addReminder(reminder) {
-  console.log('in api addReminder')  
   const state = store.getState()
   return fetch(BASE_URL + '/' + state.user.username + '/reminder?token=' + state.user.token, 
   {
@@ -48,7 +47,12 @@ export function addReminder(reminder) {
     headers: {
       "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
     },
-    body: 'title=' + reminder.title + '&rrule=' + reminder.rrule + '&schedule=' + reminder.schedule
+    body: 'title=' + reminder.title
+      + '&rrule=' + reminder.rrule 
+      + '&schedule=' + reminder.schedule 
+      + '&weight=' + reminder.weight
+      + '&fuzz=' + reminder.fuzz
+      + '&dueDate=' + reminder.dueDate
   })
   .then(res => {
     if(!res.ok) {
@@ -74,7 +78,6 @@ export function getReminders() {
       throw Error(res.statusText)
     }
     res.json().then(response => {
-      console.dir(response)
       if(response.err) {
         store.dispatch(tokenFailure()) 
         browserHistory.push('/login')
@@ -97,7 +100,9 @@ export function getReminder(reminderId) {
   })
   .then(res => {
     res.json().then(response => {
+      console.log(response)
       store.dispatch(getSingleReminderSuccess(response))
+      
     })
   })
   .catch(function(err) {
@@ -113,11 +118,15 @@ export function putReminder(reminder) {
     headers: {  
       "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"  
     },  
-    body: `title=${reminder.title}&rrule=${reminder.rrule}`
+    body: `title=${reminder.title}` +
+          `&rrule=${reminder.rrule}` +
+          `&weight=${reminder.weight}` +
+          `&dueDate=${reminder.dueDate}` +
+          `&fuzz=${reminder.fuzz}` +
+          `&schedule=${reminder.schedule}`
   })
   .then(res => {
     res.json().then(response => {
-      console.dir(response)
       store.dispatch(putSingleReminderSuccess(response))
       browserHistory.push('/reminders')
       setTimeout(() => {

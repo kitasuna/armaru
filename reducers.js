@@ -5,7 +5,7 @@ import {
         LOGIN_REQUEST, LOGIN_SUCCESS, LOGIN_FAILURE,
         REGISTER_REQUEST, REGISTER_SUCCESS, REGISTER_FAILURE,
         REMINDER_ALL_REQUEST, REMINDER_ALL_SUCCESS, REMINDER_ALL_FAILURE,
-        REMINDER_SINGLE_REQUEST, REMINDER_SINGLE_SUCCESS, REMINDER_SINGLE_FAILURE,
+        GET_REMINDER_SINGLE_REQUEST, GET_REMINDER_SINGLE_SUCCESS, GET_REMINDER_SINGLE_FAILURE,
         REMINDER_ADD_REQUEST, REMINDER_ADD_SUCCESS, REMINDER_ADD_FAILURE,
         PUT_REMINDER_SINGLE_SUCCESS,
         DELETE_REMINDER_SINGLE_SUCCESS,
@@ -14,6 +14,7 @@ import {
         TOKEN_FAILURE,
         SET_REDIRECT_URL_UNAUTHORIZED
        } from './actions'
+import moment from 'moment'
 
 function redirect( state = {url: ''}, action ) {
   switch(action.type) {
@@ -163,6 +164,23 @@ function user(state = {
   }
 }
 
+function activeReminder(state= {
+    title: '',
+    rrule: '',
+    schedule: 'none',
+    dueDate: moment().format('YYYY-MM-DD'),
+    weight: 0,
+    fuzz: 0,
+  }, action) {
+  switch(action.type) {
+    case GET_REMINDER_SINGLE_SUCCESS:
+      return Object.assign({}, state, action.activeReminder)
+
+    default:
+       return state
+  }
+}
+
 // reminder reducer
 function reminders(state={
   isFetching: false,
@@ -171,10 +189,6 @@ function reminders(state={
   }, action) {
   
   switch(action.type) {
-    case REMINDER_SINGLE_SUCCESS:
-      return Object.assign({}, state, {
-        currentlyEditing: action.currentlyEditing
-      })
 
     case REMINDER_ALL_REQUEST:
       return Object.assign({}, state, {
@@ -196,13 +210,14 @@ function reminders(state={
       const reminders = [].concat(state.reminders, action.reminder)
       return Object.assign({}, state, {
         isFetching: false,
-        reminders: [].concat(state.reminders, action.reminder)
+        reminders: [].concat(state.reminders, action.reminder),
+        activeReminder: {},
       })
 
     case PUT_REMINDER_SINGLE_SUCCESS:
       return Object.assign({}, state, {
         isFetching: false,
-        currentlyEditing: false
+        activeReminder: {},
       })
 
     case DELETE_REMINDER_SINGLE_SUCCESS:
@@ -220,6 +235,7 @@ function reminders(state={
 
 const remindersApp = combineReducers({
   user,
+  activeReminder,
   reminders,
   redirect,
   notification

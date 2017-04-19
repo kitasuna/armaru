@@ -11,8 +11,10 @@ class ReminderList extends Component {
     const { user } = this.props
     Api.getReminders(user)
   }
+
   render() {
     const { reminders } = this.props
+    const reminderId = this.props.reminderId ? this.props.reminderId : null
     
     return (
       <div>
@@ -23,14 +25,13 @@ class ReminderList extends Component {
                 <div key={index}>
                   {reminder.title}
                   | Rrule: {reminder.rrule} 
-                  | <Link to={`/reminder/edit/${reminder.id}`} >(edit)</Link>
+                  | <Link style={{cursor:'pointer'}} onClick={event => this.handleEditClick(reminder.id)} >(edit)</Link>
                   | <Link style={{cursor:'pointer'}} onClick={event => this.handleDeleteClick(reminder.id)}>(delete)</Link>  
                 </div> 
               )} 
           </div>
           <div className="col-sm-5">
-            <h2>Add a reminder</h2>
-            <ReminderAdd />
+            <ReminderAdd reminder={this.props.activeReminder}/>
           </div>
         </div>
       </div>
@@ -39,6 +40,12 @@ class ReminderList extends Component {
 
   handleDeleteClick(reminderId) {
     Api.deleteReminder(reminderId)
+  }
+
+  handleEditClick(reminderId) {
+    // Get all the reminder juice from the API
+    // and stuff it in the store... somehow...
+    Api.getReminder(reminderId)
   }
 }
 
@@ -49,10 +56,12 @@ ReminderList.propTypes = {
 function mapStateToProps(state) {
   const { user } = state
   const { reminders } = state.reminders
+  const { activeReminder } = state
 
   return {
     user,
-    reminders
+    reminders,
+    activeReminder
   }
 }
 
